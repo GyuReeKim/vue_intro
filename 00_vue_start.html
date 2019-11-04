@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <!-- js input & p -->
+  <input id="js-input" type="text">
+  <p id="js-p"></p>
+
+  <!-- div 밖의 message는 vue의 영향을 받지 않는다. -->
+  {{message}}
+
+  <div id="app">
+    {{message}}
+    <!-- v-model에 빈 변수인 msg를 넣어주었다. -->
+    <!-- input data를 v-model에 선언된 msg를 찾고 자동으로 바꿔준다. -->
+    <input id="vue-input" type="text" v-model="msg">
+    <p id="vue-p">{{msg}}</p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script>
+    // javascript
+    // id가 js-input인 input 태그에 글자가 써지면
+    const jsInput = document.querySelector('#js-input')
+    // keydown이 일어나면 오른쪽의 함수 실행
+    jsInput.addEventListener('keydown', (e)=>{
+      // p 태그 안에도 글자 출력
+      const jsP = document.querySelector('#js-p')
+      jsP.innerText = jsInput.value
+    })
+
+    // vue
+    // object를 Vue의 인자로 넣어준다. new를 적어줘야 instance가 생성된다.
+    const app = new Vue({
+      el: '#app', // id가 app인 요소와 연결해준다. el은 어디로 연결시킬지에 대한 요소
+      data: {
+        message: 'Hello vue!!', // message는 변수명. data는 el에서 지정해 준 위치에서만 사용 가능하다.
+        msg: '',
+      }
+    })
+  </script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    .completed {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+
+    <!-- style 주는 코드 -->
+    <!-- <div v-bind:style="{ color: color, fontSize: fontSize + 'px' }">
+      test
+    </div> -->
+
+    <!-- vue에서 사용 가능한 for문 -->
+    <!-- {{todos}} -->
+    <!-- 태그 안에 들어간 v-를 디렉티브라고 함 -->
+    <!-- !todo.completed는 false -->
+    <!-- v-on은 event를 말한다. -->
+    <!-- 보통 연산하는 코드는 태그 안에 쓰지 않는다. -->
+    <!-- <li v-for="todo in todos" v-if="!todo.completed" v-on:click="todo.completed = true">
+      {{todo.title}}
+    </li>
+    <li v-else v-on:click="todo.completed = false">
+      {{todo.title}} [완료!!]
+    </li> -->
+    
+    <input type="text" v-model="newTodo" v-on:keyup.enter="addTodo">
+    <button v-on:click="addTodo">+</button>
+    <button v-on:click="clearCompleted">완료항목삭제</button>
+
+    <!-- v-on에 methods를 넣어주기 -->
+    <!-- <li v-for="todo in todos" v-if="!todo.completed" v-on:click="check(todo)">
+      {{todo.title}}
+    </li>
+    <li v-else v-on:click="check(todo)">
+      {{todo.title}} [완료!!]
+    </li> -->
+
+    <!-- completed에 true, false가 아닌 현재 상태를 넣어야 한다. -->
+    <li v-for="todo in todos" v-bind:class="{completed: todo.completed}">
+      <input type="checkbox" v-model="todo.completed">
+      {{todo.title}}
+    </li>
+
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data: {
+        // style 주는 코드
+        // color: 'red',
+        // fontSize: 30,
+        newTodo: '',
+        // 배열 안에 오브젝트를 넣었다.
+        todos: [
+          {
+            title: '점심먹기',
+            completed: true,
+          },
+          {
+            title: '뷰 공부하기',
+            completed: false,
+          },
+          {
+            title: '파이썬 공부하기',
+            completed: false,
+          },
+          {
+            title: '낮잠자기',
+            completed: true,
+          },
+          // '점심먹기',
+          // '뷰 공부하기',
+          // '파이썬 공부하기',
+          // '낮잠자기'
+        ],
+      },
+      methods: {
+        check: function(todo){
+          // todo.completed = true
+          todo.completed = !todo.completed // true/false 반전시킴
+        },
+        addTodo(){
+          // console.log(this.newTodo)
+          this.todos.push({
+            title: this.newTodo,
+            completed: false,
+          })
+          // input창에 newTodo의 값이 남아있으므로 초기화
+          this.newTodo = ''
+        },
+        clearCompleted(){
+          const notCompletedTodos = this.todos.filter((todo)=>{
+            return todo.completed === false
+          })
+          this.todos = notCompletedTodos
+        }
+      }
+    })
+  </script>
+</body>
+</html>
