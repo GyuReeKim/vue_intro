@@ -12,8 +12,10 @@
     }
   </style>
 </head>
-<body>
-  <div id="app">
+<body style="margin: 0">
+  <div id="app" v-bind:style="{ backgroundImage: 'url(' + bgImg + ')' , height: '100vh', backgroundPosition: 'center', backgroundSize: 'cover'}">
+
+    <!-- <img v-bind:src="bgImg" alt=""> -->
 
     <!-- style 주는 코드 -->
     <!-- <div v-bind:style="{ color: color, fontSize: fontSize + 'px' }">
@@ -33,7 +35,17 @@
       {{todo.title}} [완료!!]
     </li> -->
     
+    <!-- 양방향 binding -->
+    <select v-model="status">
+      <!-- value값은 개발자가 사용하는 변수 이름 -->
+      <option value="all">모든항목</option>
+      <option value="active">미완료항목</option>
+      <option value="completed">완료항목</option>
+    </select>
+
     <input type="text" v-model="newTodo" v-on:keyup.enter="addTodo">
+    <!-- event 등록할때는 @ -->
+    <button @click="addTodo">+</button>
     <button v-on:click="addTodo">+</button>
     <button v-on:click="clearCompleted">완료항목삭제</button>
 
@@ -46,16 +58,64 @@
     </li> -->
 
     <!-- completed에 true, false가 아닌 현재 상태를 넣어야 한다. -->
-    <li v-for="todo in todos" v-bind:class="{completed: todo.completed}">
+    <!-- <li v-for="todo in todos" v-bind:class="{completed: todo.completed}">
+      <input type="checkbox" v-model="todo.completed">
+      {{todo.title}}
+    </li> -->
+
+    <!-- <li v-for="todo in todosByStatus()" v-bind:class="{completed: todo.completed}" v-bind:key="todo.id">
+      <input type="checkbox" v-model="todo.completed">
+      {{todo.title}}
+    </li> -->
+
+    <!-- bind 등록할 때는 : -->
+    <li v-for="todo in computedTodosByStatus" v-bind:class="{completed: todo.completed}" v-bind:key="todo.id">
       <input type="checkbox" v-model="todo.completed">
       {{todo.title}}
     </li>
-
+    
+    <!-- 뒤집어서 출력. 아래의 방법으로도 가능하긴 하지만 추천하지 않는다. -->
+    <!-- <p>{{newTodo.split('').reverse().join('')}}</p> -->
+    <!-- <p>{{reverseNewTodo}}</p> -->
+    
+    <!-- <p>{{dateMethod()}}</p>
+    <p>{{dateComputed}}</p> -->
+    
+    <!-- {{}}와 v-text 비교 -->
+    <span>지금 상태는!!! {{status}}</span>
+    <span v-text="status"></span>
+    
+    <!-- {{}}와 v-html 비교 -->
+    <span>{{tag}}</span>
+    <span v-html="tag"></span>
+    
+    <span v-if="true">안녕하세요</span>
+    <!-- span태그 확인 불가 -->
+    <span v-if="false">안녕하세요</span>
+    <!-- display: none -->
+    <span v-show="false">안녕하세요</span>
 
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
   <script>
+    const STORAGE_KEY = 'vue-todo'
+    const todoStorage = {
+      // 데이터를 저장하는 로직.
+      // 콘솔창에 todoStorage.save(app.todos) 를 치면 Application에 데이터가 저장된 것을 확인할 수 있다.
+      save: function(todos){
+        // json 형태로 저장해준다.
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
+      },
+      // 데이터를 가져오는 로직
+      fetch: function(){
+        // javascript에서 사용할 수 있는 형태로 바꿔준다. object 형태로 return 해준다.
+        // 저장되어있는 값이 없으면 (localStorage.getItem(STORAGE_KEY)가 Null이면) 빈 배열이 들어간다.
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+      }
+    }
     const app = new Vue({
       el: '#app',
       data: {
@@ -63,21 +123,26 @@
         // color: 'red',
         // fontSize: 30,
         newTodo: '',
+        status: 'all',
         // 배열 안에 오브젝트를 넣었다.
-        todos: [
+        /* todos: [
           {
+            id: 1,
             title: '점심먹기',
             completed: true,
           },
           {
+            id: 2,
             title: '뷰 공부하기',
             completed: false,
           },
           {
+            id: 3,
             title: '파이썬 공부하기',
             completed: false,
           },
           {
+            id: 4,
             title: '낮잠자기',
             completed: true,
           },
@@ -85,7 +150,10 @@
           // '뷰 공부하기',
           // '파이썬 공부하기',
           // '낮잠자기'
-        ],
+        ], */
+        todos: [],
+        bgImg: '',
+        tag: '<h1>안녕하세요</h1>'
       },
       methods: {
         check: function(todo){
@@ -94,10 +162,13 @@
         },
         addTodo(){
           // console.log(this.newTodo)
-          this.todos.push({
-            title: this.newTodo,
-            completed: false,
-          })
+          if (this.newTodo.length > 0) {
+            this.todos.push({
+              id: Date.now(),
+              title: this.newTodo,
+              completed: false,
+            })
+          }
           // input창에 newTodo의 값이 남아있으므로 초기화
           this.newTodo = ''
         },
@@ -106,7 +177,80 @@
             return todo.completed === false
           })
           this.todos = notCompletedTodos
+        },
+        todosByStatus: function(){
+          let statusTodos = []
+          if (this.status === "completed"){
+            // 완료된 항목들만 출력
+            statusTodos = this.todos.filter((todo)=>{
+              return todo.completed === true
+            })
+          } else if (this.status === "active"){
+            // 미완료된 항목
+            statusTodos = this.todos.filter((todo)=>{
+              return todo.completed === false
+            })
+          } else {
+            // 전체
+            statusTodos = this.todos
+          }
+          // if문과 elif문과 else문의 공통된 return
+          return statusTodos
+        },
+        // dateMethod: function(){
+        //   return new Date()
+        // }
+      },
+      // 데이터가 변함없으면 캐싱해놓는다.
+      computed: {
+      //   dateComputed: function(){
+      //     return new Date()
+      //   },
+        // reverseNewTodo: function(){
+        //   return this.newTodo.split('').reverse().join('')
+        // }
+        computedTodosByStatus: function(){
+          let statusTodos = []
+          if (this.status === "completed"){
+            // 완료된 항목들만 출력
+            statusTodos = this.todos.filter((todo)=>{
+              return todo.completed === true
+            })
+          } else if (this.status === "active"){
+            // 미완료된 항목
+            statusTodos = this.todos.filter((todo)=>{
+              return todo.completed === false
+            })
+          } else {
+            // 전체
+            statusTodos = this.todos
+          }
+          // if문과 elif문과 else문의 공통된 return
+          return statusTodos
         }
+      },
+      // 지정해놓은 변수를 보고있다가 todos의 값이 변하면 내부 로직이 실행된다.
+      // 기본적인 watch는 배열의 깊이 1만 확인한다.
+      watch: {
+        todos: {
+          handler: function(todos){
+            todoStorage.save(todos)
+          },
+          // 배열 내부가 바뀐다는 것을 알려준다.
+          deep: true
+        }
+      },
+      // mounted는 div와 연결되었다는 것을 의미
+      // 새로고침을 해도 데이터가 사라지지 않고 유지된다.
+      mounted: function(){
+        this.todos = todoStorage.fetch() // null
+        const IMG_URL = 'https://source.unsplash.com/random/1920x1080/?nature,water'
+        axios.get(IMG_URL)
+          .then((response)=>{
+            // console.log(response.request.responseURL)
+            this.bgImg = response.request.responseURL
+          })
+          .catch((error)=>{})
       }
     })
   </script>
