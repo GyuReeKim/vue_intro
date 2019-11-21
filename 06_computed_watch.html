@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <div id="app">
+    <input type="text" v-model="msg">
+    <p>{{watchMsgLength}} {{msg}}</p>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data: {
+        msg: '',
+        watchMsgLength: 0
+      },
+      // 변화가 감지된 순간 계산해준다.
+      watch: {
+        msg: function(){
+          this.watchMsgLength = this.msg.length
+        }
+      },
+      // 데이터의 변화가 감지될 경우에 계산해준다.
+      computed: {
+        computedMsgLength: function(){
+          return this.msg.length
+        }
+      }
+    })
+  </script>
+</body>
+</html>
